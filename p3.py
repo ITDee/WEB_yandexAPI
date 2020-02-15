@@ -12,10 +12,11 @@ ll_2 = 55.703118
 spn = 0.005
 spn_2 = 0.00111
 zoom_coeff = 1
+formatt = 'map'
 clock = pygame.time.Clock()
 
 
-def openn(x, y, m1, m2, format_='map'):
+def openn(x, y, m1, m2, format_):
     global screen
     map_request = "http://static-maps.yandex.ru/1.x/?ll={},{}&spn={},{}&l={}".format(str(x), str(y),
                                                                                      str(m1),
@@ -69,6 +70,14 @@ while running:
                 if spn > 76:
                     spn, spn_2 = 75, 75
                     zoom_coeff /= 1.8
+            if event.key == pygame.K_m:
+                value_changed = True
+                if formatt == 'map':
+                    formatt = 'sat'
+                elif formatt == 'sat':
+                    formatt = 'sat,skl'
+                elif formatt == 'sat,skl':
+                    formatt = 'map'
     if value_changed:
-        openn(ll, ll_2, spn, spn_2)
+        openn(ll, ll_2, spn, spn_2, formatt)
         value_changed = False
