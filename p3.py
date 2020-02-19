@@ -14,8 +14,10 @@ spn = 0.005
 spn_2 = 0.00111
 zoom_coeff = 1
 formatt = 'map'
+address_text = 'Ленинский проспект, 40'
 clock = pygame.time.Clock()
 font = pygame.font.Font(None, 28)
+font_address = pygame.font.Font(None, 22)
 input_box = pygame.Rect(5, 415, 520, 32)
 search = pygame.Rect(527, 415, 69, 32)
 color_inactive = pygame.Color('white')
@@ -38,6 +40,7 @@ def finder(text):
     global ll
     global ll_2
     global pt
+    global address_text
     geocoder_api_server = "http://geocode-maps.yandex.ru/1.x/"
     geocoder_params = {
         "apikey": "40d1649f-0493-4b70-98ba-98533de7710b",
@@ -53,6 +56,15 @@ def finder(text):
         return ll, ll_2
     toponym = json_response["response"]["GeoObjectCollection"][
         "featureMember"][0]["GeoObject"]
+    address_local = toponym['metaDataProperty']['GeocoderMetaData']['Address']['Components']
+    address_text = ''
+    count = 0
+    for i in address_local[::-1]:
+        count += 1
+        if count < 3:
+            address_text += i['name']
+        if count < 2 and len(address_local) != 1:
+            address_text += ', '
     toponym_coodrinates = toponym["Point"]["pos"]
     toponym_longitude, toponym_lattitude = toponym_coodrinates.split(" ")
     pt = '&pt={},{}'.format(toponym_longitude, toponym_lattitude)
@@ -88,11 +100,15 @@ def openn(x, y, m1, m2, format_='map'):
 
     os.remove(map_file)
 
+    return map_request
+
 
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
+            running = False
+            break
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_PAGEUP:
                 value_changed = True
@@ -178,6 +194,8 @@ while running:
             search_color = search_color_inactive
         elif search.collidepoint(pygame.mouse.get_pos()) and button_hold:
             search_color = search_color_active
+    if not running:
+        break
     if hold or back_hold:
         if hold:
             clock_tick = 25
@@ -189,6 +207,9 @@ while running:
             else:
                 if len(text) != 0:
                     text = text[:-1]
+    if value_changed:
+        openn(ll, ll_2, spn, spn_2, formatt)
+        value_changed = False
     if active and clock_tick in range(15, 30):
         txt_surface = font.render(text + '|', True, pygame.Color('black'))
     else:
@@ -198,6 +219,8 @@ while running:
     pygame.draw.rect(screen, search_color, search, 0)
     screen.blit(txt_surface, (input_box.x + 5, input_box.y + 5))
     screen.blit(find_text, (531, 421))
+    address = font_address.render(address_text, True, pygame.Color('black'))
+    screen.blit(address, (1, 1))
     pygame.display.flip()
     if active:
         clock_tick += 1
@@ -206,6 +229,3 @@ while running:
     if clock_tick == 30:
         clock_tick = 0
     clock.tick(30)
-    if value_changed:
-        openn(ll, ll_2, spn, spn_2, formatt)
-        value_changed = False
