@@ -14,7 +14,7 @@ spn = 0.005
 spn_2 = 0.00111
 zoom_coeff = 1
 formatt = 'map'
-address_text = 'Ленинский проспект, 40'
+address_text = ['Ленинский проспект', '40']
 clock = pygame.time.Clock()
 font = pygame.font.Font(None, 28)
 font_address = pygame.font.Font(None, 22)
@@ -56,15 +56,16 @@ def finder(text):
         return ll, ll_2
     toponym = json_response["response"]["GeoObjectCollection"][
         "featureMember"][0]["GeoObject"]
-    address_local = toponym['metaDataProperty']['GeocoderMetaData']['Address']['Components']
-    address_text = ''
+    address_local = toponym['metaDataProperty']['GeocoderMetaData']['Address']
+    address_text = []
     count = 0
-    for i in address_local[::-1]:
+    for i in address_local['Components']:
         count += 1
-        if count < 3:
-            address_text += i['name']
-        if count < 2 and len(address_local) != 1:
-            address_text += ', '
+        if i['name'] in address_text:
+            continue
+        address_text.append(i['name'])
+    if 'postal_code' in address_local:
+        address_text.append(address_local['postal_code'])
     toponym_coodrinates = toponym["Point"]["pos"]
     toponym_longitude, toponym_lattitude = toponym_coodrinates.split(" ")
     pt = '&pt={},{}'.format(toponym_longitude, toponym_lattitude)
@@ -209,6 +210,14 @@ while running:
                     text = text[:-1]
     if value_changed:
         openn(ll, ll_2, spn, spn_2, formatt)
+        full = []
+        for i in address_text:
+            address = font_address.render(i, True, pygame.Color('black'))
+            full.append(address)
+        count = -13
+        for i in full:
+            count += 13
+            screen.blit(i, (0, count))
         value_changed = False
     if active and clock_tick in range(15, 30):
         txt_surface = font.render(text + '|', True, pygame.Color('black'))
@@ -219,8 +228,6 @@ while running:
     pygame.draw.rect(screen, search_color, search, 0)
     screen.blit(txt_surface, (input_box.x + 5, input_box.y + 5))
     screen.blit(find_text, (531, 421))
-    address = font_address.render(address_text, True, pygame.Color('black'))
-    screen.blit(address, (1, 1))
     pygame.display.flip()
     if active:
         clock_tick += 1
