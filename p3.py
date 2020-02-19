@@ -64,11 +64,10 @@ def finder(text):
 def openn(x, y, m1, m2, format_='map'):
     global screen
     global pt
-    map_request = "http://static-maps.yandex.ru/1.x/?ll={},{}&spn={},{}&l={}".format(
-        str(x), str(y),
-        str(m1),
-        str(m2),
-        format_)
+    map_request = "http://static-maps.yandex.ru/1.x/?ll={},{}&spn={},{}&l={}".format(str(x), str(y),
+                                                                                     str(m1),
+                                                                                     str(m2),
+                                                                                     format_)
     if pt is not None:
         map_request += pt
     response = requests.get(map_request)
@@ -124,17 +123,6 @@ while running:
                     formatt = 'sat,skl'
                 elif formatt == 'sat,skl':
                     formatt = 'map'
-            key = pygame.key.get_pressed()
-
-            if key[pygame.K_RIGHT]:
-                ll += (spn * 2)
-            elif key[pygame.K_LEFT]:
-                ll -= (spn * 2)
-            elif key[pygame.K_UP]:
-                ll_2 += (spn * 2)
-            elif key[pygame.K_DOWN]:
-                ll_2 -= (spn * 2)
-
         if event.type == pygame.MOUSEBUTTONDOWN:
             if input_box.collidepoint(event.pos):
                 active = not active
@@ -221,5 +209,3 @@ while running:
     if value_changed:
         openn(ll, ll_2, spn, spn_2, formatt)
         value_changed = False
-
-    openn(ll, ll_2, spn, spn_2, format_=formatt)
