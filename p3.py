@@ -18,15 +18,22 @@ address_text = ['Ленинский проспект', '40']
 clock = pygame.time.Clock()
 font = pygame.font.Font(None, 28)
 font_address = pygame.font.Font(None, 22)
+find_text = font.render('Найти', True, pygame.Color('black'))
+index_text = font_address.render('Почтовый индекс', True, pygame.Color('black'))
 input_box = pygame.Rect(5, 415, 520, 32)
 search = pygame.Rect(527, 415, 69, 32)
+indexBtnOutline = pygame.Rect(5, 385, 25, 25)
+indexBtn = pygame.Rect(7, 387, 20, 20)
+indexBtnTick = pygame.Rect(10, 390, 12, 12)
 color_inactive = pygame.Color('white')
 color_active = (230, 230, 230)
 color = color_inactive
+black = pygame.Color('black')
 search_color_inactive = (255, 204, 0)
 search_color_active = (235, 172, 0)
 search_color = search_color_inactive
 active = False
+indexBtnTicked = False
 text = ''
 hold = False
 button_hold = False
@@ -64,7 +71,7 @@ def finder(text):
         if i['name'] in address_text:
             continue
         address_text.append(i['name'])
-    if 'postal_code' in address_local:
+    if 'postal_code' in address_local and indexBtnTicked:
         address_text.append(address_local['postal_code'])
     toponym_coodrinates = toponym["Point"]["pos"]
     toponym_longitude, toponym_lattitude = toponym_coodrinates.split(" ")
@@ -155,6 +162,11 @@ while running:
                 active = False
                 color = color_inactive
                 value_changed = True
+            if indexBtn.collidepoint(event.pos):
+                if indexBtnTicked:
+                    indexBtnTicked = False
+                else:
+                    indexBtnTicked = True
             button_hold = False
             search_color = search_color_inactive
         if event.type == pygame.KEYDOWN:
@@ -208,6 +220,10 @@ while running:
             else:
                 if len(text) != 0:
                     text = text[:-1]
+    if active and clock_tick in range(15, 30):
+        txt_surface = font.render(text + '|', True, pygame.Color('black'))
+    else:
+        txt_surface = font.render(text, True, pygame.Color('black'))
     if value_changed:
         openn(ll, ll_2, spn, spn_2, formatt)
         full = []
@@ -219,15 +235,17 @@ while running:
             count += 13
             screen.blit(i, (0, count))
         value_changed = False
-    if active and clock_tick in range(15, 30):
-        txt_surface = font.render(text + '|', True, pygame.Color('black'))
-    else:
-        txt_surface = font.render(text, True, pygame.Color('black'))
-    find_text = font.render('Найти', True, pygame.Color('black'))
     pygame.draw.rect(screen, color, input_box, 0)
     pygame.draw.rect(screen, search_color, search, 0)
+    pygame.draw.rect(screen, black, indexBtnOutline, 0)
+    pygame.draw.rect(screen, color_inactive, indexBtn, 0)
     screen.blit(txt_surface, (input_box.x + 5, input_box.y + 5))
     screen.blit(find_text, (531, 421))
+    screen.blit(index_text, (30, 390))
+    if indexBtnTicked:
+        pygame.draw.rect(screen, black, indexBtnTick, 0)
+    else:
+        pygame.draw.rect(screen, color_inactive, indexBtn, 0)
     pygame.display.flip()
     if active:
         clock_tick += 1
